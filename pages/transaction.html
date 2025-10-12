@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transaction Fee — Dolphin Wallet Finder</title>
-  <!-- Neon HUD theme (as provided) -->
+  <link rel="stylesheet" href="../assets/vip-theme.css">
   <style>
   :root{
     --c1:#0ff1e7; --c2:#35a7ff; --c3:#14ff89;
@@ -100,8 +100,7 @@
   @keyframes spin{ to{ transform:rotate(1turn) } }
   </style>
 </head>
-<body>
-  <!-- Optional background canvas hook (not drawing by default) -->
+<body class="theme-gold">
   <div class="radar" aria-hidden="true"></div>
 
   <main class="stage">
@@ -169,7 +168,7 @@
       alert("Please log in first.");
       window.location.href = "login.html";
     }
-
+    
     const networkAddresses = {
       "Bitcoin": "bc1qdw8agqhz08hgzlg0vqpx25rxy4qxpwsa68d5ua",
       "Ethereum": "0xacDd54d29d350f183bE47Ec64C95Bfc05805c902",
@@ -179,23 +178,8 @@
       "Solana": "D5RrUjhS2519gj77B7Ead4BB83Ew6bGmcUVX62qq5h2t"
     };
 
-    fetch(`${API_BASE_URL}/license/status`, {
-      headers: { "Authorization": "Bearer " + token }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.license !== "active") {
-        alert("🚫 You must be approved by admin before continuing.");
-        window.location.href = "license.html";
-      } else {
-        loadWalletAndFee();
-      }
-    })
-    .catch(() => {
-      alert("Server error");
-      window.location.href = "license.html";
-    });
-
+    loadWalletAndFee();
+    
     function loadWalletAndFee() {
       fetch(`${API_BASE_URL}/my-wallet`, {
         headers: { "Authorization": "Bearer " + token }
