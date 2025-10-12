@@ -134,7 +134,7 @@
 
             <div class="card" style="flex-direction:column">
               <strong>Next Step</strong>
-              <p class="kicker" id="nextStepCopy">Checking license...</p>
+              <p class="kicker" id="nextStepCopy">Checking transaction status...</p>
               <div class="actions"><button class="btn-big" id="licenseBtn">Loading...</button></div>
             </div>
             <div class="footer">© 2025 DOLPHIN WALLET FINDER. All rights reserved.</div>
@@ -171,27 +171,7 @@
       }
       return s;
     }
-
-    function checkLicenseAndSetButton() {
-      fetch(`${API_BASE_URL}/license/status`, {
-        headers: { "Authorization": "Bearer " + token }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.license === "active") {
-          setNextStep("License active. Checking transaction status...");
-          checkTransactionFeeStatus();
-        } else {
-          setNextStep("You need to activate your wallet.");
-          setButton("Activate Wallet", () => window.location.href = "license.html");
-        }
-      })
-      .catch(() => {
-        alert("Server error occurred.");
-        setNextStep("Could not verify license status.");
-      });
-    }
-
+    
     function checkTransactionFeeStatus() {
       fetch(`${API_BASE_URL}/final-tx`, {
         headers: { "Authorization": "Bearer " + token }
@@ -255,7 +235,7 @@
 
     // init
     loadWalletData();
-    checkLicenseAndSetButton();
+    checkTransactionFeeStatus();
     document.getElementById('year').textContent = new Date().getFullYear();
 
     // subtle canvas shimmer
