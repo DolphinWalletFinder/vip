@@ -1,15 +1,15 @@
 const CACHE_NAME = "dolphin-cache-v1";
 const urlsToCache = [
-  "/dolphinwalletfinder/pages/login.html",
-  "/dolphinwalletfinder/pages/profile.html",
-  "/dolphinwalletfinder/pages/license.html",
-  "/dolphinwalletfinder/pages/results.html",
-  "/dolphinwalletfinder/pages/scan.html",
-  "/dolphinwalletfinder/pages/success.html",
-  "/dolphinwalletfinder/pages/transaction.html",
-  "/dolphinwalletfinder/assets/style-neon.css",
-  "/dolphinwalletfinder/assets/wallets.js",
-  "/dolphinwalletfinder/js/login-api.js"
+  "/vip/pages/login.html",
+  "/vip/pages/profile.html",
+  "/vip/pages/license.html",
+  "/vip/pages/results.html",
+  "/vip/pages/scan.html",
+  "/vip/pages/success.html",
+  "/vip/pages/transaction.html",
+  "/vip/assets/style-neon.css",
+  "/vip/assets/wallets.js",
+  "/vip/js/login-api.js"
 ];
 
 self.addEventListener("install", event => {
