@@ -1,8 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000013">
   <title>Admin Panel — Licenses, Final TX & Users</title>
   <link rel="stylesheet" href="../assets/style-neon.css" />
   <style>
@@ -12,20 +17,33 @@
       --c-cyan-dim:rgba(0,255,255,.25);
       --c-card:rgba(0,10,20,.85);
       --glow:0 0 24px #0ff5, inset 0 0 16px #0ff2;
+      --row-pad: 12px;
     }
+    html, body { height:100%; overflow-x:hidden; }
+    html { -webkit-text-size-adjust:100%; }
     body{
       background: radial-gradient(ellipse at center, var(--c-bg), #000);
       font-family:'Orbitron', sans-serif;
       color:var(--c-cyan);
-      margin:0; padding:20px;
+      margin:0;
+      min-height:100svh;
+      display:grid;
+      place-items:center;
+      padding: env(safe-area-inset-top) clamp(12px,3vw,20px) env(safe-area-inset-bottom);
+      touch-action: pan-y;
+      -ms-touch-action: manipulation;
     }
-    .wrap{ max-width:1200px; margin:0 auto; }
+    .wrap{
+      width:min(1200px, 100%);
+      margin:0 auto;
+      contain: layout paint style;
+    }
 
     .header{
       display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
       margin-bottom:16px;
     }
-    .header h1{ margin:0; font-size:1.2rem; }
+    .header h1{ margin:0; font-size:clamp(1rem, 1.6vw, 1.2rem); }
 
     .tabs{
       display:flex; gap:8px; flex-wrap:wrap;
@@ -33,8 +51,9 @@
       padding:6px; border-radius:10px;
     }
     .tab-btn{
-      border:none; border-radius:8px; padding:8px 12px; cursor:pointer;
+      border:none; border-radius:8px; padding:10px 14px; cursor:pointer;
       background:transparent; color:var(--c-cyan); font-weight:700;
+      font-size:clamp(.9rem, 1.6vw, 1rem);
     }
     .tab-btn.active{ background:rgba(0,255,255,.14); box-shadow:0 0 10px #0ff3; }
 
@@ -51,14 +70,58 @@
     .inp, .select{
       background:#000; color:var(--c-cyan);
       border:1px solid var(--c-cyan-dim); border-radius:10px;
-      padding:10px 12px; font-family:monospace; font-size:.95rem;
+      padding:12px 14px; font-family:monospace; font-size:clamp(.9rem, 1.8vw, .95rem);
+      min-width: 220px;
     }
 
-    table{ width:100%; border-collapse:collapse; }
-    th, td{ padding:10px; border-bottom:1px solid rgba(0,255,255,.12); text-align:left; }
-    th{ cursor:pointer; user-select:none; position:relative; }
+    /* ===== Table base ===== */
+    table{ width:100%; border-collapse:collapse; table-layout:fixed; }
+    th, td{
+      padding:10px; border-bottom:1px solid rgba(0,255,255,.12); text-align:left;
+      vertical-align: top;
+      line-height:1.35;
+    }
+    th{ cursor:pointer; user-select:none; position:relative; white-space:nowrap; }
     th .sort{ font-size:.8rem; opacity:.7; margin-left:6px; }
     tr:hover{ background:rgba(0,255,255,.05); }
+
+    /* Text handling: allow clean wrapping without overflow mess */
+    td{
+      white-space:normal;
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
+    .muted{ color:#aef; font-size:.9rem; }
+    .nowrap{ white-space:nowrap; }
+
+    /* On narrow screens, switch to stacked “card rows” for clarity */
+    @media (max-width: 760px){
+      table{ table-layout:auto; }
+      thead{ display:none; }
+      tbody tr{
+        display:grid;
+        grid-template-columns: 1fr;
+        gap:6px;
+        padding:var(--row-pad);
+        border:1px solid rgba(0,255,255,.12);
+        border-radius:12px;
+        margin-block:10px;
+        background:rgba(0,255,255,.03);
+      }
+      tbody tr td{
+        display:flex;
+        gap:8px;
+        padding:0;
+      }
+      tbody tr td::before{
+        content: attr(data-label);
+        flex:0 0 120px;
+        opacity:.75;
+        font-weight:700;
+      }
+      /* keep row action buttons tidy on mobile */
+      .row-actions{ flex-wrap:wrap; }
+    }
 
     .badge{
       padding:4px 8px; border-radius:999px; font-size:.8rem; font-weight:700;
@@ -68,52 +131,102 @@
     .badge.approved{ background:rgba(0,255,170,.12); border-color:rgba(0,255,170,.35); color:#90ffdf; }
     .badge.rejected{ background:rgba(255,0,0,.12); border-color:rgba(255,0,0,.35); color:#ff9a9a; }
     .badge.active{ background:rgba(0,255,255,.12); border-color:rgba(0,255,255,.35); color:#aef; }
-    .badge.disabled{ background:rgba(255,0,0,.12); border-color:rgba(255,0,0,.35); color:#ff9a9a; }
+    .badge.disabled{ background:rgba(255,0,0,.12); border-color:rgba(255,0,0,0.35); color:#ff9a9a; }
 
     .btn{
-      border:none; border-radius:8px; padding:8px 12px; cursor:pointer;
+      border:none; border-radius:8px; padding:10px 14px; cursor:pointer;
       font-weight:700; color:#000; background:linear-gradient(135deg,#0ff,#08f);
-      box-shadow:0 0 10px #0ff;
+      box-shadow:0 0 10px #0ff; font-size:clamp(.9rem, 1.7vw, 1rem);
     }
     .btn:hover{ transform:translateY(-1px); box-shadow:0 0 14px #0ff; }
-    .btn-ghost{
-      background:transparent; color:var(--c-cyan); border:1px solid var(--c-cyan-dim);
-    }
-
-    .row-actions{ display:flex; gap:8px; flex-wrap:wrap; }
-
+    .btn-ghost{ background:transparent; color:var(--c-cyan); border:1px solid var(--c-cyan-dim); }
+    .row-actions{ display:flex; gap:8px; }
     .detail{
       display:none;
       background:rgba(0,255,255,.05);
       border:1px dashed var(--c-cyan-dim); border-radius:10px;
       padding:10px; margin-top:8px;
     }
-
     .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     @media (max-width: 900px){ .grid2{ grid-template-columns:1fr; } }
-
-    .muted{ color:#aef; font-size:.9rem; }
 
     .footer-tools{
       display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
       margin-top:12px; color:#aef; font-size:.9rem;
     }
-    .switch{
-      display:inline-flex; align-items:center; gap:8px; cursor:pointer;
-    }
+    .switch{ display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
     .switch input{ transform:scale(1.2); }
-
     .danger{ color:#ff9a9a; }
+    * { max-width:100%; }
+    /* === Pretty styles just for Backup & Logout buttons === */
+#btnBackup, #btnLogout{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:12px 16px;
+  border-radius:12px;
+  font-weight:800;
+  letter-spacing:.3px;
+  transition:transform .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+
+/* Backup: */
+#btnBackup{
+  background:linear-gradient(135deg, #00ffff 0%, #08f 100%);
+  color:#001018;
+  border:1px solid rgba(0,255,255,.35);
+  box-shadow:0 0 0px rgba(0,255,255,.2), 0 0 14px rgba(0,170,255,.35);
+}
+#btnBackup:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(0,255,255,.35), 0 0 18px rgba(0,170,255,.5);
+}
+#btnBackup:active{ transform:translateY(0); }
+#btnBackup:disabled{
+  opacity:.65; cursor:not-allowed;
+  filter:saturate(.7);
+}
+#btnBackup:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(0,255,255,.25), 0 0 0 6px rgba(0,170,255,.25);
+}
+
+/* Logout: */
+#btnLogout{
+  background:rgba(0, 20, 30, .35);
+  color:var(--c-cyan);
+  border:1px solid var(--c-cyan-dim);
+  backdrop-filter: blur(6px);
+  box-shadow:inset 0 0 0 rgba(0,0,0,0), 0 0 0 rgba(0,0,0,0);
+}
+#btnLogout:hover{
+  transform:translateY(-1px);
+  border-color:rgba(255, 90, 110, .55);
+  box-shadow:
+    0 6px 16px rgba(255, 90, 110, .25),
+    0 0 18px rgba(0,255,255,.25);
+}
+#btnLogout:active{ transform:translateY(0); }
+#btnLogout:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(255, 90, 110, .35);
+}
+
+@media (prefers-reduced-motion: reduce){
+  #btnBackup, #btnLogout{ transition:none; }
+}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="header">
       <h1>🔐 Admin Panel</h1>
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="license">License Requests</button>
-        <button class="tab-btn" data-tab="final">Final TX Requests</button>
-        <button class="tab-btn" data-tab="users">Users</button>
+      <div class="header-tools">
+        <button class="btn" id="btnBackup" title="Download JSON Backup">⬇️ Backup</button>
+        <button class="btn-ghost" id="btnLogout" title="Sign out">🚪 Logout</button>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="license">License Requests</button>
+          <button class="tab-btn" data-tab="final">Final TX Requests</button>
+          <button class="tab-btn" data-tab="users">Users</button>
+        </div>
       </div>
     </div>
 
@@ -128,7 +241,7 @@
           <option value="rejected">Rejected</option>
         </select>
       </div>
-      <table id="licenseTable">
+      <table id="licenseTable" class="responsive">
         <thead>
           <tr>
             <th data-sort="username">User <span class="sort">↕</span></th>
@@ -160,7 +273,7 @@
           <option value="rejected">Rejected</option>
         </select>
       </div>
-      <table id="finalTable">
+      <table id="finalTable" class="responsive">
         <thead>
           <tr>
             <th data-sort="username">User <span class="sort">↕</span></th>
@@ -198,7 +311,7 @@
         </select>
       </div>
 
-      <table id="usersTable">
+      <table id="usersTable" class="responsive">
         <thead>
           <tr>
             <th data-sort="username">Username <span class="sort">↕</span></th>
@@ -219,14 +332,33 @@
         </label>
         <button class="btn-ghost" id="refreshBtn3">Refresh Now</button>
         <div class="muted" id="usersCount">—</div>
+
+        <div style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+          <button class="btn-ghost" id="btnPrevUsers">« Prev</button>
+          <div class="muted" id="usersPagerInfo">Page 1 / ?</div>
+          <button class="btn-ghost" id="btnNextUsers">Next »</button>
+        </div>
       </div>
     </section>
   </div>
 
 <script>
-  const API_BASE_URL = "https://web-production-b86d.up.railway.app";
+  /* Prevent pinch/double-tap zoom while keeping vertical scroll */
+  (function(){
+    let lastTouchEnd = 0;
+    document.addEventListener('touchstart', function(e){
+      if(e.touches.length > 1){ e.preventDefault(); }
+    }, {passive:false});
+    document.addEventListener('touchend', function(e){
+      const now = Date.now();
+      if(now - lastTouchEnd <= 300){ e.preventDefault(); }
+      lastTouchEnd = now;
+    }, {passive:false});
+    document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+  })();
 
-  // ---------- Auth headers ----------
+  const API_BASE_URL = "https://web-production-d083d.up.railway.app";
+
   function authHeaders() {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -237,7 +369,6 @@
     return { "Authorization": "Bearer " + token, "Content-Type": "application/json" };
   }
 
-  // ---------- Tabs ----------
   const tabs = document.querySelectorAll(".tab-btn");
   const tabLicense = document.getElementById("tab-license");
   const tabFinal = document.getElementById("tab-final");
@@ -250,10 +381,10 @@
       tabLicense.style.display = t==="license" ? "" : "none";
       tabFinal.style.display   = t==="final"   ? "" : "none";
       tabUsers.style.display   = t==="users"   ? "" : "none";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
 
-  // ---------- Utilities ----------
   function badge(status){
     const cls = status==='approved'?'approved':status==='rejected'?'rejected':status==='active'?'active':status==='disabled'?'disabled':'pending';
     return `<span class="badge ${cls}">${status}</span>`;
@@ -263,31 +394,28 @@
     try{ return new Date(s).toLocaleString(); }catch{ return s; }
   }
   function escapeHtml(str=''){
-    return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
   }
-  // Try to get user's wallet (admin endpoint suggestion). Fallback to null gracefully.
   async function fetchUserWallet(userId){
     const headers = authHeaders(); if(!headers) return null;
     try{
       const r = await fetch(`${API_BASE_URL}/api/admin/user-wallet?user_id=${userId}`, { headers });
       if(!r.ok) return null;
-      return await r.json(); // expect {address,balance,network,lastTx} or null
+      return await r.json();
     }catch{ return null; }
   }
-  // compute fee like your transaction page logic (keep consistent)
   function computeFee(balanceStr){
-    // balanceStr like "153.989 ETH"
     if(!balanceStr) return null;
     const parts = balanceStr.split(" ");
     if(parts.length<2) return null;
     const amount = parseFloat(parts[0]);
     const curr = parts.slice(1).join(" ");
     if(isNaN(amount)) return null;
-    const fee = (amount * 0.006).toFixed(8); // same as your transaction.html
+    const fee = (amount * 0.006).toFixed(8);
     return `${fee} ${curr}`;
   }
 
-  // ---------- Rendering License ----------
+  /* ===== LICENSE TABLE ===== */
   let licenseDataRaw = [];
   let licenseSortKey = 'created_at';
   let licenseSortAsc = false;
@@ -325,14 +453,15 @@
     rows.forEach(r=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(r.username||'-')}</td>
-        <td class="muted">${escapeHtml(r.tx_hash||'-')}</td>
-        <td>${badge(r.status||'pending')}</td>
-        <td class="muted">${fmtDate(r.created_at)}</td>
-        <td>
+        <td data-label="User">${escapeHtml(r.username||'-')}</td>
+        <td class="muted" data-label="TX Hash">${escapeHtml(r.tx_hash||'-')}</td>
+        <td data-label="Status">${badge(r.status||'pending')}</td>
+        <td class="muted" data-label="Date">${fmtDate(r.created_at)}</td>
+        <td data-label="Actions">
           <div class="row-actions">
             <button class="btn" onclick="updateLicense(${r.id}, 'approve')">Approve</button>
             <button class="btn-ghost danger" onclick="updateLicense(${r.id}, 'reject')">Reject</button>
+            <button class="btn-ghost danger" title="Delete fake hash" onclick="deleteLicense(${r.id})">Delete</button>
             <button class="btn-ghost" onclick="toggleDetail(this)">Details</button>
           </div>
           <div class="detail">
@@ -348,7 +477,6 @@
         </td>
       `;
       body.appendChild(tr);
-      // lazy load wallet block
       lazyLoadWallet(r.user_id);
     });
   }
@@ -358,7 +486,7 @@
     if(!el) return;
     const w = await fetchUserWallet(userId);
     if(!w){
-      el.innerHTML = `<div class="muted">Wallet: N/A (admin wallet endpoint not available)</div>`;
+      el.innerHTML = `<div class="muted">Wallet: N/A</div>`;
       return;
     }
     const fee = computeFee(w.balance);
@@ -382,7 +510,15 @@
     else alert("Error: "+(data.error||"Unknown error"));
   }
 
-  // sorting (license)
+  async function deleteLicense(id){
+    const headers = authHeaders(); if(!headers) return;
+    if(!confirm('Delete this license request? This cannot be undone.')) return;
+    const res = await fetch(`${API_BASE_URL}/api/admin/license-requests/${id}`, { method: 'DELETE', headers });
+    const data = await res.json().catch(()=>({}));
+    if (res.ok && data.success) loadLicenseRequests();
+    else alert('Delete failed: ' + (data.error || res.statusText || 'Unknown error'));
+  }
+
   document.querySelectorAll('#licenseTable thead th[data-sort]').forEach(th=>{
     th.addEventListener('click', ()=>{
       const key = th.getAttribute('data-sort');
@@ -393,7 +529,7 @@
   document.getElementById("searchLicense").addEventListener("input", renderLicense);
   document.getElementById("filterLicense").addEventListener("change", renderLicense);
 
-  // ---------- Rendering Final ----------
+  /* ===== FINAL TX TABLE ===== */
   let finalDataRaw = [];
   let finalSortKey = 'created_at';
   let finalSortAsc = false;
@@ -431,14 +567,15 @@
     rows.forEach(r=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${escapeHtml(r.username||'-')}</td>
-        <td class="muted">${escapeHtml(r.tx_hash||'-')}</td>
-        <td>${badge(r.status||'pending')}</td>
-        <td class="muted">${fmtDate(r.created_at)}</td>
-        <td>
+        <td data-label="User">${escapeHtml(r.username||'-')}</td>
+        <td class="muted" data-label="TX Hash">${escapeHtml(r.tx_hash||'-')}</td>
+        <td data-label="Status">${badge(r.status||'pending')}</td>
+        <td class="muted" data-label="Date">${fmtDate(r.created_at)}</td>
+        <td data-label="Actions">
           <div class="row-actions">
             <button class="btn" onclick="updateFinal(${r.id}, 'approve')">Approve</button>
             <button class="btn-ghost danger" onclick="updateFinal(${r.id}, 'reject')">Reject</button>
+            <button class="btn-ghost danger" title="Delete fake hash" onclick="deleteFinal(${r.id})">Delete</button>
             <button class="btn-ghost" onclick="toggleDetail(this)">Details</button>
           </div>
           <div class="detail">
@@ -463,7 +600,7 @@
     if(!el) return;
     const w = await fetchUserWallet(userId);
     if(!w){
-      el.innerHTML = `<div class="muted">Wallet: N/A (admin wallet endpoint not available)</div>`;
+      el.innerHTML = `<div class="muted">Wallet: N/A</div>`;
       return;
     }
     const fee = computeFee(w.balance);
@@ -487,7 +624,15 @@
     else alert("Error: "+(data.error||"Unknown error"));
   }
 
-  // sorting (final)
+  async function deleteFinal(id){
+    const headers = authHeaders(); if(!headers) return;
+    if(!confirm('Delete this final transaction request? This cannot be undone.')) return;
+    const res = await fetch(`${API_BASE_URL}/api/admin/final-requests/${id}`, { method: 'DELETE', headers });
+    const data = await res.json().catch(()=>({}));
+    if (res.ok && data.success) loadFinalRequests();
+    else alert('Delete failed: ' + (data.error || res.statusText || 'Unknown error'));
+  }
+
   document.querySelectorAll('#finalTable thead th[data-sort]').forEach(th=>{
     th.addEventListener('click', ()=>{
       const key = th.getAttribute('data-sort');
@@ -498,30 +643,125 @@
   document.getElementById("searchFinal").addEventListener("input", renderFinal);
   document.getElementById("filterFinal").addEventListener("change", renderFinal);
 
-  // ---------- USERS (NEW TAB) ----------
+  /* ===== USERS TABLE ===== */
+  const USERS_PAGE_SIZE = 50;
   let usersDataRaw = [];
   let usersSortKey = 'created_at';
   let usersSortAsc = false;
+  let usersPage = 0;
+  let usersTotal = 0;
+  const usersTotalCache = new Map();
 
-  async function loadUsers(){
+  async function fetchUsersTotalSmart(q, fs, fr){
+    const headers = authHeaders(); if(!headers) return 0;
+    async function tryHeader(style){
+      const params = new URLSearchParams();
+      if (style === 'limit') { params.set('limit','1'); params.set('offset','0'); }
+      else { params.set('page','1'); params.set('per_page','1'); }
+      if (q)  params.set('q', q);
+      if (fs) params.set('status', fs);
+      if (fr) params.set('role', fr);
+      const res = await fetch(`${API_BASE_URL}/api/admin/users?${params.toString()}`, { headers });
+      if (!res.ok) return null;
+      const totalHdr = res.headers.get('X-Total-Count') || res.headers.get('x-total-count');
+      if (totalHdr && !Number.isNaN(parseInt(totalHdr,10))) return parseInt(totalHdr,10);
+      return null;
+    }
+    let headerTotal = await tryHeader('limit');
+    if (headerTotal !== null) return headerTotal;
+    headerTotal = await tryHeader('page');
+    if (headerTotal !== null) return headerTotal;
+
+    const pageSize = 500; let offset = 0; let total = 0;
+    while(true){
+      const qs = new URLSearchParams({ limit:String(pageSize), offset:String(offset) });
+      if (q)  qs.set('q', q);
+      if (fs) qs.set('status', fs);
+      if (fr) qs.set('role', fr);
+      const res = await fetch(`${API_BASE_URL}/api/admin/users?${qs.toString()}`, { headers });
+      if (!res.ok) break;
+      let page;
+      try { page = await res.json(); } catch { page = []; }
+      total += page.length;
+      if (page.length < pageSize) break;
+      offset += pageSize;
+      await new Promise(r=>setTimeout(r, 60));
+    }
+    return total;
+  }
+
+  function updateUsersTabBadge(){
+    const btnUsers = [...document.querySelectorAll('.tab-btn')].find(b => b.dataset.tab === 'users');
+    if (!btnUsers) return;
+    const baseLabel = 'Users';
+    btnUsers.textContent = usersTotal ? `${baseLabel} (${usersTotal})` : baseLabel;
+  }
+
+  async function loadUsers(page = usersPage){
+    usersPage = page;
     const headers = authHeaders(); if(!headers) return;
-    try{
-      const res = await fetch(`${API_BASE_URL}/api/admin/users`, { headers });
-      if(!res.ok){
-        // Fallback to empty array on error to avoid crashing the UI
-        usersDataRaw = [];
-      } else {
-        usersDataRaw = await res.json();
-      }
-    }catch(e){ usersDataRaw = []; }
-    renderUsers();
+
+    const q  = (document.getElementById('searchUsers')?.value || '').trim();
+    const fs = document.getElementById('filterUsers')?.value || '';
+    const fr = document.getElementById('filterRoles')?.value || '';
+
+    const sig = JSON.stringify({q,fs,fr});
+    if (usersTotalCache.has(sig)) {
+      usersTotal = usersTotalCache.get(sig);
+      updateUsersTabBadge();
+      document.getElementById('usersCount').textContent = `Total users: ${usersTotal} — Loading page ${usersPage + 1}…`;
+    } else {
+      usersTotal = await fetchUsersTotalSmart(q, fs, fr);
+      usersTotalCache.set(sig, usersTotal);
+      updateUsersTabBadge();
+      document.getElementById('usersCount').textContent = `Total users: ${usersTotal} — Loading page ${usersPage + 1}…`;
+    }
+
+    const params1 = new URLSearchParams();
+    params1.set('limit', String(USERS_PAGE_SIZE));
+    params1.set('offset', String(usersPage * USERS_PAGE_SIZE));
+    if (q)  params1.set('q', q);
+    if (fs) params1.set('status', fs);
+    if (fr) params1.set('role', fr);
+
+    let url = `${API_BASE_URL}/api/admin/users?${params1.toString()}`;
+    let res;
+    try { res = await fetch(url, { headers }); } catch { res = null; }
+
+    if (!res || !res.ok) {
+      const params2 = new URLSearchParams();
+      params2.set('page', String(usersPage + 1));
+      params2.set('per_page', String(USERS_PAGE_SIZE));
+      if (q)  params2.set('q', q);
+      if (fs) params2.set('status', fs);
+      if (fr) params2.set('role', fr);
+      url = `${API_BASE_URL}/api/admin/users?${params2.toString()}`;
+      try { res = await fetch(url, { headers }); } catch { res = null; }
+    }
+
+    if (!res || !res.ok) {
+      usersDataRaw = [];
+      renderUsers(); updateUsersPager();
+      return;
+    }
+
+    try { usersDataRaw = await res.json(); } catch { usersDataRaw = []; }
+
+    const totalHdr = res.headers.get('X-Total-Count') || res.headers.get('x-total-count');
+    if (totalHdr && !Number.isNaN(parseInt(totalHdr, 10))) {
+      usersTotal = parseInt(totalHdr, 10);
+      usersTotalCache.set(sig, usersTotal);
+      updateUsersTabBadge();
+    }
+
+    renderUsers(); updateUsersPager();
   }
 
   function renderUsers(){
     const body = document.getElementById('usersBody');
-    const q = (document.getElementById('searchUsers').value || '').toLowerCase().trim();
-    const fs = document.getElementById('filterUsers').value; // status
-    const fr = document.getElementById('filterRoles').value; // role
+    const q  = (document.getElementById('searchUsers').value || '').toLowerCase().trim();
+    const fs = (document.getElementById('filterUsers').value || '').toLowerCase();
+    const fr = (document.getElementById('filterRoles').value || '').toLowerCase();
 
     let rows = usersDataRaw.slice();
 
@@ -547,14 +787,15 @@
     rows.forEach(u=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${escapeHtml(u.username||'-')}</td>
-        <td class="muted">${escapeHtml(u.email||'-')}</td>
-        <td>${escapeHtml(u.role||'user')}</td>
-        <td>${badge((u.status||'active').toLowerCase())}</td>
-        <td class="muted">${fmtDate(u.created_at)}</td>
-        <td>
+        <td data-label="Username">${escapeHtml(u.username||'-')}</td>
+        <td class="muted" data-label="Email">${escapeHtml(u.email||'-')}</td>
+        <td data-label="Role">${escapeHtml(u.role||'user')}</td>
+        <td data-label="Status">${badge((u.status||'active').toLowerCase())}</td>
+        <td class="muted" data-label="Created">${fmtDate(u.created_at)}</td>
+        <td data-label="Actions">
           <div class="row-actions">
             <button class="btn-ghost" onclick="toggleDetail(this)">Details</button>
+            <button class="btn-ghost danger" title="Delete user" onclick="deleteUser(${u.id})">Delete</button>
           </div>
           <div class="detail">
             <div class="grid2">
@@ -573,12 +814,24 @@
         </td>
       `;
       body.appendChild(tr);
-      // lazy wallet
       lazyLoadUsersWallet(u.id);
     });
 
     const count = document.getElementById('usersCount');
-    count.textContent = `${rows.length} of ${usersDataRaw.length} users shown`;
+    count.textContent = `Total users: ${usersTotal} — Showing ${rows.length} on page ${usersPage + 1}`;
+  }
+
+  function updateUsersPager(){
+    const info = document.getElementById('usersPagerInfo');
+    const btnPrev = document.getElementById('btnPrevUsers');
+    const btnNext = document.getElementById('btnNextUsers');
+
+    const totalPages = Math.max(1, Math.ceil(usersTotal / USERS_PAGE_SIZE));
+    info.textContent = `Page ${usersPage + 1} / ${isFinite(totalPages) ? totalPages : '?'}`;
+
+    btnPrev.disabled = usersPage <= 0;
+    const likelyLastPage = usersDataRaw.length < USERS_PAGE_SIZE;
+    btnNext.disabled = totalPages ? (usersPage + 1 >= totalPages) : likelyLastPage;
   }
 
   async function lazyLoadUsersWallet(userId){
@@ -586,7 +839,7 @@
     if(!el) return;
     const w = await fetchUserWallet(userId);
     if(!w){
-      el.innerHTML = `<div class=\"muted\">Wallet: N/A (admin wallet endpoint not available)</div>`;
+      el.innerHTML = `<div class="muted">Wallet: N/A</div>`;
       return;
     }
     const fee = computeFee(w.balance);
@@ -600,49 +853,146 @@
     `;
   }
 
-  // sorting (users)
-  document.querySelectorAll('#usersTable thead th[data-sort]').forEach(th=>{
-    th.addEventListener('click', ()=>{
-      const key = th.getAttribute('data-sort');
-      if(usersSortKey===key){ usersSortAsc = !usersSortAsc; } else { usersSortKey = key; usersSortAsc=true; }
-      renderUsers();
-    });
-  });
-  document.getElementById('searchUsers').addEventListener('input', renderUsers);
-  document.getElementById('filterUsers').addEventListener('change', renderUsers);
-  document.getElementById('filterRoles').addEventListener('change', renderUsers);
+  async function deleteUser(id){
+    const headers = authHeaders(); if(!headers) return;
+    if(!confirm('Delete this user and all related data? This cannot be undone.')) return;
+    const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, { method: 'DELETE', headers });
+    const data = await res.json().catch(()=>({}));
+    if (res.ok && data.success) {
+      usersTotalCache.clear();
+      loadUsers(0);
+      alert('User deleted.');
+    } else {
+      alert('Delete failed: ' + (data.error || res.statusText || 'Unknown error'));
+    }
+  }
 
-  // ---------- Row details toggle ----------
   window.toggleDetail = function(btn){
     const detail = btn.closest('td').querySelector('.detail');
     if(!detail) return;
     detail.style.display = detail.style.display==='block' ? 'none' : 'block';
   }
 
-  // ---------- Refresh controls ----------
   const auto1 = document.getElementById("autoRefresh");
   const auto2 = document.getElementById("autoRefresh2");
   const auto3 = document.getElementById("autoRefresh3");
   const refreshBtn = document.getElementById("refreshBtn");
   const refreshBtn2 = document.getElementById("refreshBtn2");
   const refreshBtn3 = document.getElementById("refreshBtn3");
+  const btnPrevUsers = document.getElementById("btnPrevUsers");
+  const btnNextUsers = document.getElementById("btnNextUsers");
 
   refreshBtn.addEventListener("click", ()=>{ loadLicenseRequests(); });
   refreshBtn2.addEventListener("click", ()=>{ loadFinalRequests(); });
-  refreshBtn3 && refreshBtn3.addEventListener("click", ()=>{ loadUsers(); });
+  refreshBtn3 && refreshBtn3.addEventListener("click", ()=>{ usersTotalCache.clear(); loadUsers(usersPage); });
+
+  btnPrevUsers.addEventListener('click', ()=>{ if(usersPage>0) loadUsers(usersPage-1); });
+  btnNextUsers.addEventListener('click', ()=>{ loadUsers(usersPage+1); });
 
   setInterval(()=>{ if(auto1 && auto1.checked) loadLicenseRequests(); }, 15000);
   setInterval(()=>{ if(auto2 && auto2.checked) loadFinalRequests(); }, 15000);
-  setInterval(()=>{ if(auto3 && auto3.checked) loadUsers(); }, 15000);
+  setInterval(()=>{ if(auto3 && auto3.checked) loadUsers(usersPage); }, 15000);
 
-  // ---------- Boot ----------
+  /* Backup */
+  function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+  function downloadJSON(filename, obj) {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  async function fetchAllUsers(limit=200){
+    const headers = authHeaders(); if(!headers) throw new Error("No auth");
+    let offset = 0;
+    const all = [];
+    while(true){
+      const qs = new URLSearchParams({ limit:String(limit), offset:String(offset) });
+      const res = await fetch(`${API_BASE_URL}/api/admin/users?`+qs.toString(), { headers });
+      if(!res.ok) throw new Error("fetch users failed");
+      const page = await res.json();
+      all.push(...page);
+      if(page.length < limit) break;
+      offset += limit;
+      await sleep(80);
+    }
+    return all;
+  }
+  async function fetchJson(path){
+    const headers = authHeaders(); if(!headers) throw new Error("No auth");
+    const res = await fetch(`${API_BASE_URL}${path}`, { headers });
+    if(!res.ok) throw new Error(`fetch ${path} failed`);
+    return await res.json();
+  }
+  async function backupNow(){
+    const btn = document.getElementById('btnBackup');
+    try{
+      if(btn){ btn.disabled = true; btn.textContent = 'Backing up…'; }
+      const users = await fetchAllUsers(200);
+      const wallets = {};
+      for (const u of users){
+        try{
+          const w = await fetchUserWallet(u.id);
+          if (w) wallets[u.id] = w;
+        }catch(_){}
+        await sleep(35);
+      }
+      const [licenseReqs, finalReqs, withdrawReqs] = await Promise.all([
+        fetchJson('/api/admin/license-requests'),
+        fetchJson('/api/admin/final-requests'),
+        fetchJson('/api/admin/withdraw-requests')
+      ]);
+      const payload = {
+        meta: {
+          created_at: new Date().toISOString(),
+          api_base: API_BASE_URL || 'same-origin',
+          note: 'Admin JSON backup (password hashes are not exposed by the API).'
+        },
+        users,
+        wallets,
+        license_requests: licenseReqs,
+        final_requests: finalReqs,
+        withdraw_requests: withdrawReqs
+      };
+      const stamp = new Date().toISOString().replace(/[:.]/g,'-');
+      downloadJSON(`backup-${stamp}.json`, payload);
+      if(btn){ btn.textContent = '✅ Backup ready'; setTimeout(()=>{ btn.textContent='⬇️ Backup'; btn.disabled=false; }, 1500); }
+    }catch(err){
+      console.error(err);
+      alert('Backup failed: ' + (err?.message || err));
+      if(btn){ btn.textContent='⬇️ Backup'; btn.disabled=false; }
+    }
+  }
+  document.getElementById('btnBackup')?.addEventListener('click', backupNow);
+
   document.addEventListener("DOMContentLoaded", ()=>{
     loadLicenseRequests();
     loadFinalRequests();
-    loadUsers();
+    loadUsers(0);
+  });
+</script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var btnLogout = document.getElementById('btnLogout');
+    if (!btnLogout) return;
+    btnLogout.addEventListener('click', function () {
+      if (!confirm('Sign out of this account?')) return;
+      try {
+        if (window.DWF_API && typeof window.DWF_API.logout === 'function') {
+          window.DWF_API.logout();
+          return;
+        }
+      } catch (e) {}
+      
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('username');
+      window.location.href = 'login.html';
+    });
   });
 </script>
 </body>
 </html>
+
 
 
