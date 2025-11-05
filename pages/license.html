@@ -315,28 +315,30 @@
 
     // Background animation
     const c = document.getElementById('bg');
-    if (c && c.getContext) {
-      const ctx = c.getContext('2d');
-      const dpr = window.devicePixelRatio || 1;
-      function resizeBg(){ c.width = innerWidth*dpr; c.height = innerHeight*dpr; }
-      resizeBg(); addEventListener('resize', resizeBg);
-      let t=0;
-      (function loop(){
-        ctx.clearRect(0,0,c.width,c.height);
-        ctx.globalAlpha = 0.08;
-        for(let i=0;i<24;i++){
-          const r = (Math.min(c.width,c.height)/3) * (i/24);
-          ctx.beginPath();
-          ctx.arc(c.width/2, c.height/2, r + Math.sin(t/25+i)*8*dpr, 0, Math.PI*2);
-          ctx.strokeStyle = 'rgba(64,203,255,0.35)';
-          ctx.lineWidth = 1*dpr;
-          ctx.setLineDash([8*dpr, 10*dpr]);
-          ctx.stroke();
-        }
-        ctx.setLineDash([]);
-        t++; requestAnimationFrame(loop);
-      })();
+if (c && c.getContext) {
+  const ctx = c.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  function resizeBg(){ c.width = innerWidth * dpr; c.height = innerHeight * dpr; }
+  resizeBg(); addEventListener('resize', resizeBg);
+  let t = 0;
+  (function loop() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.globalAlpha = 0.08;
+    for (let i = 0; i < 24; i++) {
+      const r = (Math.min(c.width, c.height) / 3) * (i / 24);
+      const radius = Math.abs(r + Math.sin(t / 25 + i) * 8 * dpr); 
+
+      ctx.beginPath();
+      ctx.arc(c.width / 2, c.height / 2, radius, 0, Math.PI * 2);  
+      ctx.strokeStyle = 'rgba(64,203,255,0.35)';
+      ctx.lineWidth = 1 * dpr;
+      ctx.setLineDash([8 * dpr, 10 * dpr]);
+      ctx.stroke();
     }
+    ctx.setLineDash([]);
+    t++; requestAnimationFrame(loop);
+  })();
+}
 
     // ===== ANDROID VIEWPORT FIX =====
     // Set --vh to actual innerHeight so 100 * var(--vh) is always correct
@@ -352,3 +354,4 @@
   </script>
 </body>
 </html>
+
