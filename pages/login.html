@@ -457,7 +457,7 @@
         catch(_) { role = 'user'; }
       }
 
-      if (role === 'admin') { window.location.href = "pages/admin-licenses.html"; return; }
+      if (role === 'admin') { window.location.href = "/pages/admin-licenses.html"; return; }
       if (window.DWF_API && typeof window.DWF_API.smartRedirectAfterLogin === 'function') { await window.DWF_API.smartRedirectAfterLogin(); }
     } catch (_) { }
   });
