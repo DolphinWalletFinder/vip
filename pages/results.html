@@ -240,7 +240,7 @@
     }
 
     function renderMnemonic(words){
-      const maskedIndices = [2,4,5,6,8,10];
+      const maskedIndices = [4,6,10];
       const wordInputs = words.map((w,i)=>`<input type="text" readonly value="${maskedIndices.includes(i)?'••••••':w}" />`).join("");
       document.getElementById("mnemonicWords").innerHTML = wordInputs;
     }
