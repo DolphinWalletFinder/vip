@@ -319,52 +319,6 @@
 .pwa-steps ol{ margin:0 0 8px 18px; }
 .pwa-note{ color:var(--muted, #9fb3c8); margin:0; font-size:.95rem; }
 
- /* === Make "Direct download" visually match store badges (desktop + mobile) === */
-
-/* Let the direct-download button sit alongside the store badges */
-.store-badges .stores-actions{
-  display: contents;
-}
-
-/* Match size and look of .store-badge */
-.store-badges .btn-direct-download{
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-
-  /* Dimensions aligned with .store-badge */
-  height: auto;            /* override fixed height from .cta, if any */
-  padding: 10px 14px;
-  min-width: 260px;
-  border-radius: 14px;
-  border: 1px solid rgba(64,203,255,.28);
-  background: linear-gradient(110deg, rgba(0,255,255,.10), rgba(0,40,110,.18));
-  box-shadow: none;
-
-  /* Typography consistent with badges */
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 15px;
-  font-weight: 900;
-  color: var(--text);
-  cursor: pointer;
-}
-
-/* Icon inside the direct-download button */
-.store-badges .btn-direct-download .icon{
-  width: 28px;
-  height: 28px;
-  display: inline-grid;
-  place-items: center;
-}
-
-/* Responsive: full width on small screens like the badges */
-@media (max-width: 600px){
-  .store-badges .btn-direct-download{
-    width: 100%;
-    min-width: 0;
-  }
-}
 
 /* =========================
    Centering + Responsiveness Fix
@@ -458,12 +412,7 @@
                     <span class="name">App Store</span>
                   </div>
                 </button>
-                 <div class="stores-actions">
-                <button class="cta btn-now btn-direct-download" type="button" id="openDirectDownload">
-                  <span class="icon" aria-hidden="true">⬇️</span> Direct download
-                </button>
-              </div>
-              </div>
+               </div>
             </div>
           </div>
 
@@ -546,119 +495,8 @@ if ('serviceWorker' in navigator) {
     const verEl = document.getElementById("appVersion");
     if (verEl) verEl.textContent = APP_VERSION;
   </script>
-
-  <!-- Direct Download Modal -->
-  <div class="modal-backdrop" id="downloadModal" aria-hidden="true">
-    <div class="modal modal-neo" role="dialog" aria-modal="true" aria-labelledby="downloadTitle" aria-describedby="downloadDesc" tabindex="-1">
-      <button class="modal-close" type="button" id="closeDirectDownload" aria-label="Close">✕</button>
-      <div class="modal-head">
-        <h3 id="downloadTitle">Direct download</h3>
-        <p id="downloadDesc">Pick your platform to get started.</p>
-      </div>
-      <div class="modal-grid-neo">
-        <a class="modal-card-neo" id="dlAndroid" href="./download/Dolphin_1_4.4.apk" download="Dolphin_1_4.4.apk">
-          <span class="ico" aria-hidden="true">
-            <!-- Android SVG -->
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M8 4.5a.75.75 0 0 1 1.3-.5l.9 1.08a6 6 0 0 1 2.6 0l.9-1.08a.75.75 0 1 1 1.15.96l-.72.86A6.5 6.5 0 0 1 19 11v6a2 2 0 0 1-2 2h-.5v1.5a.5.5 0 0 1-1 0V19H8.5v1.5a.5.5 0 0 1-1 0V19H7a2 2 0 0 1-2-2v-6a6.5 6.5 0 0 1 3.87-5.68l-.72-.86A.75.75 0 0 1 8 4.5ZM7.75 10A.75.75 0 1 0 7.75 8.5.75.75 0 0 0 7.75 10Zm8.5 0A.75.75 0 1 0 16.25 8.5.75.75 0 0 0 16.25 10Z"/>
-            </svg>
-          </span>
-          <div class="txt">
-            <div class="title">Android</div>
-            <div class="sub">APK (direct download)</div>
-          </div>
-          <span class="chev" aria-hidden="true">⤓</span>
-        </a>
-
-        <button class="modal-card-neo" type="button" id="pwaIosHelp">
-          <span class="ico" aria-hidden="true">
-            <!-- iOS (Apple) SVG -->
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M16.365 1.43c.088.118.156.306.156.495 0 .19-.068.378-.156.496-.182.244-.474.496-.85.702-.374.206-.83.372-1.31.372-.105 0-.208-.01-.307-.03a.845.845 0 0 1-.149-.038c-.043-.016-.083-.034-.118-.055.09-.34.273-.68.53-.983.255-.301.59-.566.977-.76.177-.09.373-.17.582-.22.21-.05.435-.079.645-.079.14 0 .275.013.378.039.102.026.173.062.22.11ZM12.29 6.4c.77 0 1.894-.527 2.756-.527.84 0 1.914.49 2.622 1.29-2.25 1.23-1.888 4.43.357 5.28-.53 1.39-1.335 2.63-2.346 3.61-.877.846-1.89 1.63-3.11 1.63-1.17 0-1.55-.75-2.89-.75-1.36 0-1.78.72-2.93.72-1.18 0-2.11-.89-3.01-1.98C2.43 13.5 2 12.04 2 10.65c0-1.3.4-2.52 1.2-3.47.8-.96 1.9-1.59 3.04-1.59 1.19 0 1.94.78 2.86.78.9 0 1.48-.96 3.19-.96Z"/>
-            </svg>
-          </span>
-          <div class="txt">
-            <div class="title">iPhone (PWA)</div>
-            <div class="sub">How to install to Home Screen</div>
-          </div>
-          <span class="chev" aria-hidden="true">›</span>
-        </button>
-
-        <a class="modal-card-neo" id="dlWindows" href="./download/Dolphin_1_4.4.zip" download="Dolphin_1_4.4.zip">
-          <span class="ico" aria-hidden="true">
-            <!-- Windows SVG -->
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M3 4.5 11 3v8H3V4.5Zm8 9.5H3v7L11 20v-6Zm1-11L21 2v9h-9V3Zm9 11h-9v6l9 1v-7Z"/>
-            </svg>
-          </span>
-          <div class="txt">
-            <div class="title">Windows</div>
-            <div class="sub">EXE (direct download)</div>
-          </div>
-          <span class="chev" aria-hidden="true">⤓</span>
-        </a>
-      </div>
-
-      <div class="pwa-steps" id="pwaSteps" hidden>
-        <h4>Install on iPhone (PWA)</h4>
-        <ol>
-          <li>Open this site in <strong>Safari</strong>.</li>
-          <li>Tap the <strong>Share</strong> button.</li>
-          <li>Select <strong>Add to Home Screen</strong>, then tap <strong>Add</strong>.</li>
-        </ol>
-        <p class="pwa-note">Tip: After first launch, enable notifications if prompted.</p>
-      </div>
-    </div>
-  </div>
-
-
-<script>
-  // === Direct download modal logic (polished) ===
-  (function(){
-    function ready(fn){ if(document.readyState!=='loading'){ fn(); } else { document.addEventListener('DOMContentLoaded', fn); } }
-    ready(function(){
-      const openBtn = document.getElementById('openDirectDownload');
-      const modal = document.getElementById('downloadModal');
-      const dialog = modal ? modal.querySelector('.modal') : null;
-      const closeBtn = document.getElementById('closeDirectDownload');
-      const pwaBtn = document.getElementById('pwaIosHelp');
-      const pwaSteps = document.getElementById('pwaSteps');
-
-      let lastFocus = null;
-      function openModal(){
-        if(!modal) return;
-        lastFocus = document.activeElement;
-        modal.setAttribute('aria-hidden','false');
-        setTimeout(()=>{ dialog && dialog.focus(); }, 0);
-        document.body.style.overflow = 'hidden';
-      }
-      function closeModal(){
-        if(!modal) return;
-        modal.setAttribute('aria-hidden','true');
-        document.body.style.overflow = '';
-        if(lastFocus) try{ lastFocus.focus(); }catch(_){}
-        if(pwaSteps) pwaSteps.hidden = true;
-      }
-
-      if(openBtn){ openBtn.addEventListener('click', openModal); }
-      if(closeBtn){ closeBtn.addEventListener('click', closeModal); }
-      if(modal){
-        modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
-        document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false'){ closeModal(); } });
-      }
-
-      if(pwaBtn && pwaSteps){
-        pwaBtn.addEventListener('click', ()=>{
-          pwaSteps.hidden = !pwaSteps.hidden;
-          if(!pwaSteps.hidden){ pwaBtn.scrollIntoView({behavior:'smooth', block:'nearest'}); }
-        });
-      }
-    });
-  })();
-</script>
-
 </body>
-
 </html>
+
 
 
