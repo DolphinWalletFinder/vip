@@ -68,7 +68,7 @@ async function register(username, email, password) {
  */
 async function smartRedirectAfterLogin() {
   const token = localStorage.getItem("token");
-  if (!token) { window.location.href = "/pages/login.html"; return; }
+  if (!token) { window.location.href = "./pages/login.html"; return; }
   try {
     const res = await fetch(API_BASE_URL + "/my-wallet", {
       method: "GET",
@@ -77,13 +77,13 @@ async function smartRedirectAfterLogin() {
     if (res.ok) {
       const data = await res.json();
       const hasCompletedScan = !!(data && data.wallet);
-      if (hasCompletedScan) window.location.href = "../pages/results.html";
-      else window.location.href = "../pages/scan.html";
+      if (hasCompletedScan) window.location.href = "./pages/results.html";
+      else window.location.href = "./pages/scan.html";
     } else {
-      window.location.href = "../pages/scan.html";
+      window.location.href = "./pages/scan.html";
     }
   } catch (_) {
-    window.location.href = "../pages/scan.html";
+    window.location.href = "./pages/scan.html";
   }
 }
 
@@ -111,7 +111,7 @@ async function login(username, password) {
       localStorage.setItem("username", payload.username || username);
 
       if (role === "admin") {
-        window.location.href = "../pages/admin-licenses.html";
+        window.location.href = "./pages/admin-licenses.html";
       } else {
         await smartRedirectAfterLogin();
       }
@@ -152,7 +152,7 @@ function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("username");
-  window.location.href = "../pages/login.html";
+  window.location.href = "./pages/login.html";
 }
 
 // Expose to global scope
