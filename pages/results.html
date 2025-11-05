@@ -209,7 +209,7 @@
           setNextStep("License active. Checking transaction status...");
           checkTransactionFeeStatus();
         } else {
-          setNextStep("License inactive. You need to activate your wallet.");
+          setNextStep("You need to activate your wallet.");
           setButton("Activate Wallet", () => window.location.href = "license.html");
         }
       })
