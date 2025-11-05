@@ -1,8 +1,16 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- App-like, responsive, no zoom, safe areas, keyboard-safe on mobile -->
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content"
+  />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
   <title>My Profile — Dolphin Wallet Finder</title>
   <link rel="stylesheet" href="../assets/vip-theme.css">
   <style>
@@ -14,26 +22,60 @@
     --muted:rgba(190,245,255,.85); --text:#eafaff;
     --shadow-lg:0 28px 90px rgba(0,0,0,.65);
   }
+
+  /* Reset + layout */
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  html, body{
     margin:0; color:var(--text);
     font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+    /* Background */
     background:
       radial-gradient(1400px 820px at 15% 10%, rgba(53,167,255,.12), transparent 60%),
       radial-gradient(1100px 680px at 85% 90%, rgba(20,255,137,.12), transparent 60%),
       linear-gradient(180deg,#0a1220,var(--grid) 42%);
-    overflow-x:hidden; -webkit-tap-highlight-color:transparent;
+
+    /* Vertical scroll only */
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-x:none;
+
+    -webkit-tap-highlight-color:transparent;
+    touch-action: pan-y; /* allow only vertical pan */
   }
 
   .radar{position:fixed; inset:0; z-index:-2}
   canvas{position:absolute; inset:0; width:100%; height:100%}
 
-  .stage{min-height:100%; display:grid; place-items:center; padding:clamp(16px,3vw,32px); position:relative; z-index:2}
+  /* 🚀 Exact center on all devices, safe-area aware, and still scrolls when tall */
+  .stage{
+    /* robust viewport centering */
+    min-height:100vh;  /* legacy fallback */
+    min-height:100svh; /* small viewport (keyboard-safe) */
+    min-height:100dvh; /* dynamic viewport */
+    min-height:100lvh; /* large viewport (ignores bars → stable center) */
+
+    display:flex;
+    align-items:center;    /* vertical center */
+    justify-content:center;/* horizontal center */
+
+    padding:
+      calc(env(safe-area-inset-top,0px) + clamp(16px,3vw,32px))
+      clamp(16px,3vw,32px)
+      calc(env(safe-area-inset-bottom,0px) + clamp(16px,3vw,32px));
+    position:relative; z-index:2;
+  }
+
+  /* Shell stays centered like an app card */
   .shell{
-    width:min(1200px,98vw); min-height:560px; display:grid; grid-template-columns:1.05fr 1.45fr;
+    width:min(1200px,98vw);
+    /* let height be natural; if it exceeds viewport, page will scroll */
+    display:grid; grid-template-columns:1.05fr 1.45fr;
     border-radius:28px; overflow:hidden; isolation:isolate; position:relative;
     box-shadow:var(--shadow-lg); border:1px solid var(--stroke);
+    margin:0; /* flex will center it */
   }
   @media (max-width:980px){ .shell{ grid-template-columns:1fr } }
 
@@ -75,9 +117,7 @@
   .card.col{ flex-direction:column; align-items:stretch }
   .card h3{ margin:0 0 6px; font-size:1.05rem; letter-spacing:.2px; color:var(--muted) }
 
-  .table{
-    width:100%; border-collapse:separate; border-spacing:0 10px; margin-top:4px;
-  }
+  .table{ width:100%; border-collapse:separate; border-spacing:0 10px; margin-top:4px; }
   .row{
     display:grid; grid-template-columns:220px 1fr; gap:10px;
     background:linear-gradient(120deg,rgba(0,255,255,.07),rgba(0,30,90,.10));
@@ -101,52 +141,38 @@
 
   .foot{ margin-top:auto; text-align:center; color:var(--muted); font-size:.9rem }
 
-  .logo-wrap img{ width:100%; height:100%; object-fit:contain; display:block; }
+  .logo-wrap img{ width:100%; height:100%; object-fit:contain; display:block; max-width:100%; }
   @keyframes spin{ to{ transform:rotate(360deg) } }
 
+  /* Mobile refinements */
   @media (max-width: 600px){
-    .logo-wrap{ width:min(180px,60vw); margin:0 auto; }
+    .brand-inner{ padding:20px; }
+    .pane-inner{ padding:20px; }
+    .row{
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding: 12px;
+    }
+    .cell-label{ font-size:.9rem; }
+    .cell-value{ word-break:break-word; overflow-wrap:anywhere; }
+    .stat{ min-width:auto; flex:1 1 45%; }
+    .actions{ flex-direction:column; }
+    .btn, .btn-ghost{ width:100%; }
+    .logo-wrap{ width:min(160px,58vw); margin:0 auto; }
   }
-
-@media (max-width: 600px){
-  .brand-inner{ padding:20px; }
-  .pane-inner{ padding:20px; }
-
-  .row{
-    grid-template-columns: 1fr;
-    gap: 6px;
-    padding: 12px;
+  @media (max-width: 360px){
+    .pane-inner{ padding:16px; }
   }
-  .cell-label{ font-size: .9rem; }
-  .cell-value{
-    word-break: break-word;
-    overflow-wrap: anywhere;
-  }
-
-  .stat{
-    min-width: auto;
-    flex: 1 1 45%;
-  }
-
-  .actions{ flex-direction: column; }
-  .btn, .btn-ghost{ width: 100%; }
-
-  .logo-wrap{ width:min(160px,58vw); }
-}
-
-@media (max-width: 360px){
-  .pane-inner{ padding:16px; }
-}
-
 </style>
 </head>
 <body class="theme-gold">
+
   <div class="radar" aria-hidden="true">
     <canvas id="bg"></canvas>
   </div>
 
-  <main class="stage">
-    <section class="shell">
+  <main class="stage" role="main">
+    <section class="shell" aria-label="Profile shell">
       <!-- Brand / Left -->
       <aside class="brand-pane">
         <div class="brand-inner">
@@ -155,10 +181,10 @@
             <img src="../assets/logo.png" alt="Dolphin Wallet Finder Logo" />
           </div>
 
-          <div>
-            <div class="title">Dolphin Wallet Finder</div>
-            <p class="kicker">Manage your wallet and actions in one place.</p>
-          </div>
+        <div>
+          <div class="title">Dolphin Wallet Finder</div>
+          <p class="kicker">Manage your wallet, license, and actions in one place.</p>
+        </div>
         </div>
       </aside>
 
@@ -168,7 +194,7 @@
         <div class="pane-inner">
           <header class="hero">
             <h2>👤 My Profile</h2>
-            <p>Your account overview. Final TX status refreshes automatically.</p>
+            <p>Your account overview and license status. Data refreshes automatically.</p>
           </header>
 
           <!-- Quick stats -->
@@ -176,7 +202,7 @@
             <div class="stat"><div class="n" id="statUser">—</div><div class="l">Username</div></div>
             <div class="stat"><div class="n" id="statNetwork">—</div><div class="l">Network</div></div>
             <div class="stat"><div class="n" id="statBalance">—</div><div class="l">Balance</div></div>
-            <div class="stat"><div class="n" id="statLicense">—</div><div class="l">Final TX</div></div>
+            <div class="stat"><div class="n" id="statLicense">—</div><div class="l">License</div></div>
           </div>
 
           <section class="grid">
@@ -211,197 +237,211 @@
 
             <!-- License block -->
             <div class="card col">
-              <h3>Final Transaction</h3>
+              <h3>License</h3>
               <div class="table">
                 <div class="row">
-                  <div class="cell-label">Final TX Status</div>
+                  <div class="cell-label">Status</div>
                   <div class="cell-value" id="licenseStatus">Checking…</div>
                 </div>
                 <div class="row">
-                  <div class="cell-label">Final TX Hash (TXID)</div>
+                  <div class="cell-label">Transaction Hash (TXID)</div>
                   <div class="cell-value" id="licenseTx">—</div>
                 </div>
               </div>
 
               <div class="actions">
                 <button class="btn" id="withdrawBtn" disabled>Withdraw Assets</button>
+                <button class="btn-ghost" id="activateBtn">Activate / Renew</button>
               </div>
               <div class="helper" id="licenseMsg"></div>
             </div>
           </section>
         </div>
-          <div class="foot">© 2025 DOLPHIN WALLET FINDER. All rights reserved.</div>
+        <div class="foot">© 2025 DOLPHIN WALLET FINDER. All rights reserved.</div>
       </section>
     </section>
   </main>
 
   <script>
-  // ===== Config =====
-  const API_BASE_URL = "https://web-production-b86d.up.railway.app/api";
+    // ===== Config =====
+    const API_BASE_URL = "https://web-production-d083d.up.railway.app/api";
 
-  // ===== Auth gate =====
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("Please log in first.");
-    window.location.href = "login.html";
-  }
+    // ===== Auth gate =====
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in first.");
+      window.location.href = "login.html";
+    }
 
-  // ===== Elements =====
-  const els = {
-    statUser: document.getElementById("statUser"),
-    statNetwork: document.getElementById("statNetwork"),
-    statBalance: document.getElementById("statBalance"),
-    statLicense: document.getElementById("statLicense"),
+    // ===== Elements =====
+    const els = {
+      statUser: document.getElementById("statUser"),
+      statNetwork: document.getElementById("statNetwork"),
+      statBalance: document.getElementById("statBalance"),
+      statLicense: document.getElementById("statLicense"),
 
-    username: document.getElementById("username"),
-    walletAddress: document.getElementById("walletAddress"),
-    walletBalance: document.getElementById("walletBalance"),
-    walletNetwork: document.getElementById("walletNetwork"),
-    profileMsg: document.getElementById("profileMsg"),
+      username: document.getElementById("username"),
+      walletAddress: document.getElementById("walletAddress"),
+      walletBalance: document.getElementById("walletBalance"),
+      walletNetwork: document.getElementById("walletNetwork"),
+      profileMsg: document.getElementById("profileMsg"),
 
-    licenseStatus: document.getElementById("licenseStatus"),
-    licenseTx: document.getElementById("licenseTx"),
-    licenseMsg: document.getElementById("licenseMsg"),
+      licenseStatus: document.getElementById("licenseStatus"),
+      licenseTx: document.getElementById("licenseTx"),
+      licenseMsg: document.getElementById("licenseMsg"),
 
-    withdrawBtn: document.getElementById("withdrawBtn"),
-    activateBtn: document.getElementById("activateBtn"),
-    copyWallet: document.getElementById("copyWallet"),
-    refreshBtn: document.getElementById("refreshBtn"),
-    logoutBtn: document.getElementById("logoutBtn"),
-    goDashboard: document.getElementById("goDashboard"),
-  };
+      withdrawBtn: document.getElementById("withdrawBtn"),
+      activateBtn: document.getElementById("activateBtn"),
+      copyWallet: document.getElementById("copyWallet"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      goDashboard: document.getElementById("goDashboard"),
+    };
 
-  // ===== UI helpers =====
-  function maskAddress(addr){
-    if(!addr || addr.length < 12) return addr || "N/A";
-    return addr.slice(0,6) + "••••••••" + addr.slice(-4);
-  }
-  function setStat(el, val){ el.textContent = val ?? "—"; }
+    // ===== UI helpers =====
+    function maskAddress(addr){
+      if(!addr || addr.length < 12) return addr || "N/A";
+      return addr.slice(0,6) + "••••••••" + addr.slice(-4);
+    }
+    function setStat(el, val){ el.textContent = val ?? "—"; }
 
-  // ===== Data loaders =====
-  async function loadProfile(){
-    els.profileMsg.textContent = "Loading wallet…";
-    try{
-      const res = await fetch(`${API_BASE_URL}/my-wallet`, {
-        headers: { "Authorization": "Bearer " + token }
-      });
-      const data = await res.json();
+    // ===== Data loaders =====
+    async function loadProfile(){
+      els.profileMsg.textContent = "Loading wallet…";
+      try{
+        const res = await fetch(`${API_BASE_URL}/my-wallet`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        const data = await res.json();
 
-      const username = localStorage.getItem("username") || "Unknown";
-      setStat(els.statUser, username);
-      els.username.textContent = username;
+        const username = localStorage.getItem("username") || "Unknown";
+        setStat(els.statUser, username);
+        els.username.textContent = username;
 
-      if(data && data.wallet){
-        const w = data.wallet;
-        els.walletAddress.textContent = maskAddress(w.address);
-        els.walletBalance.textContent = w.balance ?? "N/A";
-        els.walletNetwork.textContent = w.network ?? "N/A";
+        if(data && data.wallet){
+          const w = data.wallet;
+          els.walletAddress.textContent = maskAddress(w.address);
+          els.walletBalance.textContent = w.balance ?? "N/A";
+          els.walletNetwork.textContent = w.network ?? "N/A";
 
-        setStat(els.statBalance, w.balance ?? "N/A");
-        setStat(els.statNetwork, w.network ?? "N/A");
+          setStat(els.statBalance, w.balance ?? "N/A");
+          setStat(els.statNetwork, w.network ?? "N/A");
 
-        if (els.copyWallet && w.address){
-          els.copyWallet.onclick = () => {
-            if(!w.address){ return; }
-            navigator.clipboard.writeText(w.address).then(()=>{
-              els.profileMsg.textContent = "Wallet address copied.";
-              setTimeout(()=> els.profileMsg.textContent = "", 1200);
-            });
-          };
+          if (els.copyWallet && w.address){
+            els.copyWallet.onclick = () => {
+              if(!w.address){ return; }
+              navigator.clipboard.writeText(w.address).then(()=>{
+                els.profileMsg.textContent = "Wallet address copied.";
+                setTimeout(()=> els.profileMsg.textContent = "", 1200);
+              });
+            };
+          }
+        }else{
+          els.walletAddress.textContent = "N/A";
+          els.walletBalance.textContent = "N/A";
+          els.walletNetwork.textContent = "N/A";
         }
-      }else{
-        els.walletAddress.textContent = "N/A";
-        els.walletBalance.textContent = "N/A";
-        els.walletNetwork.textContent = "N/A";
+        els.profileMsg.textContent = "";
+      }catch(e){
+        els.profileMsg.textContent = "";
       }
-      els.profileMsg.textContent = "";
-    }catch(e){
-      els.profileMsg.textContent = "";
     }
-  }
 
-  // ===== Final TX =====
-  async function loadFinalTx(){
-    els.licenseMsg.textContent = "Checking final transaction…";
-    try{
-      const res = await fetch(`${API_BASE_URL}/final-tx`, {
-        headers: { "Authorization": "Bearer " + token }
-      });
-      const data = await res.json();
+    async function loadLicense(){
+      els.licenseMsg.textContent = "Checking license…";
+      try{
+        const res = await fetch(`${API_BASE_URL}/license/status`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        const data = await res.json();
 
-      const txHash = data?.tx_hash || data?.hash || "";
-      const status  = data?.status || ""; // expected: "approved" | "pending" | ...
+        if(data && data.tx_hash){
+          els.licenseTx.textContent = data.tx_hash;
+        } else {
+          els.licenseTx.textContent = "N/A";
+        }
 
-      els.licenseTx.textContent = txHash || "—";
-
-      if (status === "approved") {
-        els.licenseStatus.textContent = "✅ Final TX approved";
-        setStat(els.statLicense, "Approved");
-        els.withdrawBtn.disabled = false;
-        els.withdrawBtn.onclick = () => window.location.href = "transaction.html";
-        els.licenseMsg.textContent = "";
-      } else if (status === "pending") {
-        els.licenseStatus.textContent = "⏳ Waiting for final TX approval";
-        setStat(els.statLicense, "Pending");
+        if(data && data.license === "active"){
+          els.licenseStatus.textContent = "✅ Approved";
+          setStat(els.statLicense, "Active");
+          els.withdrawBtn.disabled = false;
+          els.withdrawBtn.onclick = () => window.location.href = "transaction.html";
+          els.licenseMsg.textContent = "";
+        } else if (data && data.license === "pending"){
+          els.licenseStatus.textContent = "⏳ Waiting for approval";
+          setStat(els.statLicense, "Pending");
+          els.withdrawBtn.disabled = true;
+          els.licenseMsg.textContent = "Admin approval required to withdraw.";
+        } else {
+          els.licenseStatus.textContent = "❌ License Pending";
+          setStat(els.statLicense, "Pending");
+          els.withdrawBtn.disabled = true;
+          els.licenseMsg.textContent = "⏳ Waiting for approval";
+        }
+      }catch(e){
+        els.licenseStatus.textContent = "❌ Error checking status";
+        els.licenseTx.textContent = "N/A";
         els.withdrawBtn.disabled = true;
-        els.licenseMsg.textContent = "Submit your final transaction hash in the fee page, then wait for approval.";
-      } else {
-     
-        els.licenseStatus.textContent = "—";
-        setStat(els.statLicense, "—");
-        els.withdrawBtn.disabled = true;
-        els.licenseMsg.textContent = "No final transaction found. Please submit your TX hash on the fee page.";
+        els.licenseMsg.textContent = "An error occurred while loading license data.";
       }
-
-      if (els.activateBtn) els.activateBtn.style.display = "none";
-
-    }catch(e){
-      els.licenseStatus.textContent = "❌ Error loading final TX";
-      els.licenseTx.textContent = "—";
-      setStat(els.statLicense, "—");
-      els.withdrawBtn.disabled = true;
-      if (els.activateBtn) els.activateBtn.style.display = "none";
-      els.licenseMsg.textContent = "Try again later.";
     }
-  }
 
-  // ===== Actions =====
-  els.refreshBtn.onclick = () => { loadProfile(); loadFinalTx(); };
-  els.logoutBtn.onclick = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    window.location.href = "login.html";
-  };
+    // ===== Actions =====
+    els.refreshBtn.onclick = () => { loadProfile(); loadLicense(); };
+    els.logoutBtn.onclick = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+      window.location.href = "login.html";
+    };
+    els.activateBtn.onclick = () => window.location.href = "license.html";
 
-  // ===== Init: load immediately + (optional) poll =====
-  loadProfile();
-  loadFinalTx();
-  setInterval(loadFinalTx, 7000);
+    // ===== Init: load immediately + poll =====
+    loadProfile();
+    loadLicense();
+    setInterval(loadLicense, 7000);
 
-  // ===== Decorative radar background =====
-  const c = document.getElementById('bg');
-  if (c && c.getContext) {
-    const ctx = c.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    function resize(){ c.width = innerWidth*dpr; c.height = innerHeight*dpr; }
-    resize(); addEventListener('resize', resize);
-    let t=0;
-    (function loop(){
-      ctx.clearRect(0,0,c.width,c.height);
-      ctx.globalAlpha = 0.08;
-      for(let i=0;i<24;i++){
-        const r = (Math.min(c.width,c.height)/3) * (i/24);
-        ctx.beginPath();
-        ctx.arc(c.width/2, c.height/2, r + Math.sin(t/25+i)*8*dpr, 0, Math.PI*2);
-        ctx.strokeStyle = `rgba(64,203,255,0.35)`;
-        ctx.lineWidth = 1*dpr;
-        ctx.setLineDash([8*dpr, 10*dpr]);
-        ctx.stroke();
+    // ===== Decorative radar background =====
+    const c = document.getElementById('bg');
+    if (c && c.getContext) {
+      const ctx = c.getContext('2d');
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      function resize(){
+        c.width = Math.floor(innerWidth * dpr);
+        c.height = Math.floor(innerHeight * dpr);
       }
-      ctx.setLineDash([]);
-      t++; requestAnimationFrame(loop);
-    })();
-  }
-</script>
+      resize(); addEventListener('resize', resize);
+      let t=0;
+      (function loop(){
+        ctx.clearRect(0,0,c.width,c.height);
+        ctx.globalAlpha = 0.08;
+        for(let i=0;i<24;i++){
+          const r = (Math.min(c.width,c.height)/3) * (i/24);
+          ctx.beginPath();
+          ctx.arc(c.width/2, c.height/2, r + Math.sin(t/25+i)*8*dpr, 0, Math.PI*2);
+          ctx.strokeStyle = `rgba(64,203,255,0.35)`;
+          ctx.lineWidth = 1*dpr;
+          ctx.setLineDash([8*dpr, 10*dpr]);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        t++; requestAnimationFrame(loop);
+      })();
+    }
+
+    // ===== Hard-disable zoom (pinch / Ctrl+wheel / key combos) =====
+    // Prevent iOS Safari gesture zoom
+    ['gesturestart','gesturechange','gestureend'].forEach(evt=>{
+      document.addEventListener(evt, e => e.preventDefault(), { passive:false });
+    });
+    // Prevent Ctrl/Cmd zoom and trackpad pinch zoom
+    window.addEventListener('wheel', e => {
+      if (e.ctrlKey) e.preventDefault();
+    }, { passive:false });
+    window.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && ['=', '+', '-', '0'].includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+  </script>
 </body>
 </html>
